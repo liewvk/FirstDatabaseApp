@@ -28,6 +28,55 @@ namespace FirstDatabaseApp
                 MessageBox.Show("Error loading data: " + ex.Message);
             }
         }
+        private void LoadStudents()
+        {
+            string query = "SELECT StudentID, FullName, Gender, DateOfBirth, PhoneNumber, Address FROM Students";
+
+            try
+            {
+                using (SqlConnection con = new SqlConnection(DatabaseHelper.ConnectionString))
+                {
+                    SqlDataAdapter adapter = new SqlDataAdapter(query, con);
+                    DataTable dt = new DataTable();
+
+                    adapter.Fill(dt);
+                    dgvStudents.DataSource = dt;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading student records: " + ex.Message);
+            }
+        }
+        private void SaveStudent()
+        {
+            string query = "INSERT INTO Students (FullName, Gender, DateOfBirth, PhoneNumber, Address) " +
+                           "VALUES (@FullName, @Gender, @DateOfBirth, @PhoneNumber, @Address)";
+
+            using (SqlConnection con = new SqlConnection(DatabaseHelper.ConnectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    cmd.Parameters.AddWithValue("@FullName", txtFullName.Text.Trim());
+                    cmd.Parameters.AddWithValue("@Gender", cmbGender.Text);
+                    cmd.Parameters.AddWithValue("@DateOfBirth", dtpDateOfBirth.Value.Date);
+                    cmd.Parameters.AddWithValue("@PhoneNumber", txtPhoneNumber.Text.Trim());
+                    cmd.Parameters.AddWithValue("@Address", txtAddress.Text.Trim());
+
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+        private void ClearFields()
+        {
+            txtFullName.Clear();
+            cmbGender.SelectedIndex = -1;
+            txtPhoneNumber.Clear();
+            txtAddress.Clear();
+            dtpDateOfBirth.Value = DateTime.Today;
+            txtFullName.Focus();
+        }
 
         public Form1()
         {
@@ -55,71 +104,41 @@ namespace FirstDatabaseApp
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            string connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=StudentManagementDB;Integrated Security=True;TrustServerCertificate=True";
-
-            string query = "INSERT INTO Students (FullName, Gender, DateOfBirth, PhoneNumber, Address) " +
-                           "VALUES (@FullName, @Gender, @DateOfBirth, @PhoneNumber, @Address)";
-
             try
             {
-                using (SqlConnection con = new SqlConnection(connectionString))
-                {
-                    using (SqlCommand cmd = new SqlCommand(query, con))
-                    {
-                        cmd.Parameters.AddWithValue("@FullName", txtFullName.Text);
-                        cmd.Parameters.AddWithValue("@Gender", cmbGender.Text);
-                        cmd.Parameters.AddWithValue("@DateOfBirth", dtpDateOfBirth.Value.Date);
-                        cmd.Parameters.AddWithValue("@PhoneNumber", txtPhoneNumber.Text);
-                        cmd.Parameters.AddWithValue("@Address", txtAddress.Text);
-
-                        con.Open();
-                        cmd.ExecuteNonQuery();
-
-                        MessageBox.Show("Student record saved successfully.");
-                    }
-                }
+                SaveStudent();
+                LoadStudents();
+                ClearFields();
+                MessageBox.Show("Student record saved successfully.");
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message);
+                MessageBox.Show("Error saving record: " + ex.Message);
             }
 
         }
 
         private void btnUpdate_Click(object sender, EventArgs e)
         {
-            string connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=StudentManagementDB;Integrated Security=True;TrustServerCertificate=True";
-
             string query = "UPDATE Students SET FullName=@FullName, Gender=@Gender, DateOfBirth=@DateOfBirth, " +
-                           "PhoneNumber=@PhoneNumber, Address=@Address WHERE StudentID=@StudentID";
+                    "PhoneNumber=@PhoneNumber, Address=@Address WHERE StudentID=@StudentID";
 
-            try
+            using (SqlConnection con = new SqlConnection(DatabaseHelper.ConnectionString))
             {
-                using (SqlConnection con = new SqlConnection(connectionString))
+                using (SqlCommand cmd = new SqlCommand(query, con))
                 {
-                    using (SqlCommand cmd = new SqlCommand(query, con))
-                    {
-                        cmd.Parameters.AddWithValue("@FullName", txtFullName.Text);
-                        cmd.Parameters.AddWithValue("@Gender", cmbGender.Text);
-                        cmd.Parameters.AddWithValue("@DateOfBirth", dtpDateOfBirth.Value.Date);
-                        cmd.Parameters.AddWithValue("@PhoneNumber", txtPhoneNumber.Text);
-                        cmd.Parameters.AddWithValue("@Address", txtAddress.Text);
-                        cmd.Parameters.AddWithValue("@StudentID", txtStudentID.Text);
+                    cmd.Parameters.AddWithValue("@FullName", txtFullName.Text.Trim());
+                    cmd.Parameters.AddWithValue("@Gender", cmbGender.Text);
+                    cmd.Parameters.AddWithValue("@DateOfBirth", dtpDateOfBirth.Value.Date);
+                    cmd.Parameters.AddWithValue("@PhoneNumber", txtPhoneNumber.Text.Trim());
+                    cmd.Parameters.AddWithValue("@Address", txtAddress.Text.Trim());
+                    cmd.Parameters.AddWithValue("@StudentID", Convert.ToInt32(txtStudentID.Text));
 
-                        con.Open();
-                        int rowsAffected = cmd.ExecuteNonQuery();
-
-                        if (rowsAffected > 0)
-                            MessageBox.Show("Student record updated successfully.");
-                        else
-                            MessageBox.Show("No matching record found.");
-                    }
+                    con.Open();
+                    cmd.ExecuteNonQuery();
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error: " + ex.Message);
-            }
+
 
         }
 
@@ -238,7 +257,32 @@ namespace FirstDatabaseApp
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            LoadStudentsToGrid();
+
+        }
+
+        private void btnLoadData_Click(object sender, EventArgs e)
+        {
+            LoadStudents();
+        }
+
+        private void dgvStudents_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                DataGridViewRow row = dgvStudents.Rows[e.RowIndex];
+
+                txtStudentID.Text = row.Cells["StudentID"].Value.ToString();
+                txtFullName.Text = row.Cells["FullName"].Value.ToString();
+                cmbGender.Text = row.Cells["Gender"].Value.ToString();
+                dtpDateOfBirth.Value = Convert.ToDateTime(row.Cells["DateOfBirth"].Value);
+                txtPhoneNumber.Text = row.Cells["PhoneNumber"].Value != null
+                    ? row.Cells["PhoneNumber"].Value.ToString()
+                    : "";
+                txtAddress.Text = row.Cells["Address"].Value != null
+                    ? row.Cells["Address"].Value.ToString()
+                    : "";
+            }
+
         }
     }
 }

@@ -47,6 +47,7 @@
             tnLoadStudents = new Button();
             dgvStudents = new DataGridView();
             lstStudents = new ListBox();
+            btnLoadData = new Button();
             ((System.ComponentModel.ISupportInitialize)dgvStudents).BeginInit();
             SuspendLayout();
             // 
@@ -201,11 +202,12 @@
             // dgvStudents
             // 
             dgvStudents.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvStudents.Location = new Point(87, 296);
+            dgvStudents.Location = new Point(87, 350);
             dgvStudents.Name = "dgvStudents";
             dgvStudents.RowHeadersWidth = 51;
-            dgvStudents.Size = new Size(641, 176);
+            dgvStudents.Size = new Size(641, 122);
             dgvStudents.TabIndex = 12;
+            dgvStudents.CellClick += dgvStudents_CellClick;
             // 
             // lstStudents
             // 
@@ -215,11 +217,22 @@
             lstStudents.Size = new Size(275, 64);
             lstStudents.TabIndex = 13;
             // 
+            // btnLoadData
+            // 
+            btnLoadData.Location = new Point(84, 280);
+            btnLoadData.Name = "btnLoadData";
+            btnLoadData.Size = new Size(149, 34);
+            btnLoadData.TabIndex = 14;
+            btnLoadData.Text = "Load Data";
+            btnLoadData.UseVisualStyleBackColor = true;
+            btnLoadData.Click += btnLoadData_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 493);
+            Controls.Add(btnLoadData);
             Controls.Add(lstStudents);
             Controls.Add(dgvStudents);
             Controls.Add(tnLoadStudents);
@@ -267,5 +280,6 @@
         private Button tnLoadStudents;
         private DataGridView dgvStudents;
         private ListBox lstStudents;
+        private Button btnLoadData;
     }
 }
